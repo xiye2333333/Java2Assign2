@@ -9,6 +9,8 @@ public class Game extends Thread {
   private Socket player1;
   private Socket player2;
 
+  private Boolean TURN = true;
+
   public Game(Socket player1, Socket player2) {
     this.player1 = player1;
     this.player2 = player2;
@@ -34,33 +36,87 @@ public class Game extends Thread {
       outputStream2.writeUTF("2");
 
       //communicate
-      while (true) {
-        try {
-          String[] player1_data = player1_in.readUTF().split(" ");
-          System.out.println(player1.getPort() + " " + player1_data[0] + " " + player1_data[1]);
-          outputStream2.writeUTF(player1_data[0] + " " + player1_data[1]);
-        } catch (EOFException e) {
-          System.out.println("Game over");
-          break;
-        } catch (IOException e) {
-          System.out.println(player1.getPort() + " " + "has disconnected");
-          outputStream2.writeUTF("Your opponent has disconnected");
-          break;
+      DataInputStream finalPlayer1_in = player1_in;
+      Thread player1_thread = new Thread(() -> {
+        while (true) {
+          if (TURN) {
+            try {
+              String[] player1_data = finalPlayer1_in.readUTF().split(" ");
+              System.out.println(player1.getPort() + " " + player1_data[0] + " " + player1_data[1]);
+              outputStream2.writeUTF(player1_data[0] + " " + player1_data[1]);
+//              TURN = !TURN;
+            } catch (EOFException e) {
+              System.out.println("Game over");
+              break;
+            } catch (IOException e) {
+              System.out.println(player1.getPort() + " " + "has disconnected");
+              try {
+                outputStream2.writeUTF("Your opponent has disconnected");
+              } catch (IOException ex) {
+                ex.printStackTrace();
+              }
+              break;
+            }
+          }
         }
+      });
 
-        try {
-          String[] player2_data = player2_in.readUTF().split(" ");
-          System.out.println(player2.getPort() + " " + player2_data[0] + " " + player2_data[1]);
-          outputStream1.writeUTF(player2_data[0] + " " + player2_data[1]);
-        } catch (EOFException e) {
-          System.out.println("Game over");
-          break;
-        } catch (IOException e) {
-          System.out.println(player2.getPort() + " " + "has disconnected");
-          outputStream1.writeUTF("Your opponent has disconnected");
-          break;
+      DataInputStream finalPlayer2_in = player2_in;
+      Thread player2_thread = new Thread(() -> {
+        while (true) {
+          if (TURN) {
+            try {
+              String[] player2_data = finalPlayer2_in.readUTF().split(" ");
+              System.out.println(player2.getPort() + " " + player2_data[0] + " " + player2_data[1]);
+              outputStream1.writeUTF(player2_data[0] + " " + player2_data[1]);
+//              TURN = !TURN;
+            } catch (EOFException e) {
+              System.out.println("Game over");
+              break;
+            } catch (IOException e) {
+              System.out.println(player2.getPort() + " " + "has disconnected");
+              try {
+                outputStream1.writeUTF("Your opponent has disconnected");
+              } catch (IOException ex) {
+                ex.printStackTrace();
+              }
+              break;
+            }
+          }
         }
-      }
+      });
+
+      player1_thread.start();
+      player2_thread.start();
+
+
+//      while (true) {
+//        try {
+//          String[] player1_data = player1_in.readUTF().split(" ");
+//          System.out.println(player1.getPort() + " " + player1_data[0] + " " + player1_data[1]);
+//          outputStream2.writeUTF(player1_data[0] + " " + player1_data[1]);
+//        } catch (EOFException e) {
+//          System.out.println("Game over");
+//          break;
+//        } catch (IOException e) {
+//          System.out.println(player1.getPort() + " " + "has disconnected");
+//          outputStream2.writeUTF("Your opponent has disconnected");
+//          break;
+//        }
+//
+//        try {
+//          String[] player2_data = player2_in.readUTF().split(" ");
+//          System.out.println(player2.getPort() + " " + player2_data[0] + " " + player2_data[1]);
+//          outputStream1.writeUTF(player2_data[0] + " " + player2_data[1]);
+//        } catch (EOFException e) {
+//          System.out.println("Game over");
+//          break;
+//        } catch (IOException e) {
+//          System.out.println(player2.getPort() + " " + "has disconnected");
+//          outputStream1.writeUTF("Your opponent has disconnected");
+//          break;
+//        }
+//      }
     } catch (IOException e) {
       System.out.println("Game over!");
     }

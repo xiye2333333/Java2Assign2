@@ -55,6 +55,7 @@ public class Controller implements Initializable {
           e.printStackTrace();
         }
         TURN = false;
+        System.out.println("Opponent's turn");
       }
       if (checkWin()) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -220,6 +221,11 @@ public class Controller implements Initializable {
         String player_number = in.readUTF();
         System.out.println("Game start! Player number: " + player_number);
         TURN = player_number.equals("1");
+        if (TURN){
+          System.out.println("Your turn!");
+        } else {
+            System.out.println("Oppoent's turn!");
+        }
       } catch (IOException e) {
         e.printStackTrace();
       }
@@ -245,6 +251,7 @@ public class Controller implements Initializable {
           Platform.runLater(() -> {
             refreshBoard(x, y);
             TURN = true;
+
             if (checkWin()) {
               Alert alert = new Alert(Alert.AlertType.INFORMATION);
               alert.setTitle("Game Over");
@@ -261,21 +268,24 @@ public class Controller implements Initializable {
               alert.showAndWait();
               exit();
             }
+            System.out.println("Your turn!");
           });
         } catch (IOException e) {
-          System.out.println("Server disconnected!");
-          Platform.runLater(() -> {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Game Over");
-            alert.setHeaderText(null);
-            alert.setContentText("Server disconnected!");
-            alert.showAndWait();
-            exit();
-          });
-          break;
+          if(e.getMessage().equals("Connection reset")) {
+            System.out.println("Server disconnected!");
+            Platform.runLater(() -> {
+              Alert alert = new Alert(Alert.AlertType.INFORMATION);
+              alert.setTitle("Game Over");
+              alert.setHeaderText(null);
+              alert.setContentText("Server disconnected!");
+              alert.showAndWait();
+              exit();
+            });
+            break;
+          }
+
         }
       }
     }
   }
-
 }
